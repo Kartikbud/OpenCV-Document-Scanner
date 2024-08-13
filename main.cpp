@@ -50,18 +50,28 @@ vector<Point> getContours(Mat image){
             
             if (area > maxArea && conPoly[i].size() == 4) {
                 
+                drawContours(imgOriginal, conPoly, i, Scalar(255, 0, 255), 5);
                 biggest = {conPoly[i][0], conPoly[i][1], conPoly[i][2], conPoly[i][3]};
                 maxArea = area;
                 
             }
-            
-            drawContours(imgOriginal, conPoly, i, Scalar(255, 0, 255), 2);
             
         }
         
     }
     
     return biggest;
+    
+}
+
+void drawPoints (vector<Point> points, Scalar color) {
+    
+    for (int i = 0; i < points.size(); i++) {
+        
+        circle(imgOriginal, points[i], 10, color, FILLED);
+        putText(imgOriginal, to_string(i), points[i], FONT_HERSHEY_PLAIN, 4, color, 4);
+        
+    }
     
 }
 
@@ -77,6 +87,7 @@ int main() {
     
     //Getting the contours of the page
     initialPoints = getContours(imgThreshold);
+    drawPoints(initialPoints, Scalar(0, 0, 255));
     
     imshow("Original Image", imgOriginal); //displaying the image
     imshow("Threshold Image", imgThreshold); //displaying the threshold image
