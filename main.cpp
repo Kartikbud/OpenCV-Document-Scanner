@@ -8,6 +8,8 @@ using namespace std;
 
 Mat imgOriginal, imgGray, imgBlur, imgCanny, imgThreshold, imgDilation, imgErode;
 
+vector<Point> initialPoints;
+
 Mat preProcessing(Mat img) {
     
     cvtColor(img, imgGray, COLOR_BGR2GRAY); //converting the image to grayscale
@@ -20,6 +22,49 @@ Mat preProcessing(Mat img) {
     
 }
 
+vector<Point> getContours(Mat image){
+    
+    vector<vector<Point>> contours;
+    vector<Vec4i> hierarchy;
+    
+    findContours(image, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+    
+    vector<vector<Point>> conPoly(contours.size());
+    vector<Rect> boundRect(contours.size());
+    
+    vector<Point> biggest;
+    
+    int maxArea = 0;
+    
+    for (int i = 0; i < contours.size(); i++){
+        
+        int area = contourArea(contours[i]);
+        cout << area << endl;
+        
+        string objectType;
+        
+        if (area > 1000) {
+            
+            float perimeter = arcLength(contours[i], true);
+            approxPolyDP(contours[i], conPoly[i], 0.02*perimeter, true);
+            
+            if (area > maxArea && conPoly[i].size() == 4) {
+                
+                biggest = {conPoly[i][0], conPoly[i][1], conPoly[i][2], conPoly[i][3]};
+                maxArea = area;
+                
+            }
+            
+            drawContours(imgOriginal, conPoly, i, Scalar(255, 0, 255), 2);
+            
+        }
+        
+    }
+    
+    return biggest;
+    
+}
+
 int main() {
 
     string path = "Assets/paper.jpg"; //defining the path to the test image
@@ -29,6 +74,9 @@ int main() {
     
     //Pre-Processing the image to be able to identify the contours (borders of the sheet).
     imgThreshold = preProcessing(imgOriginal);
+    
+    //Getting the contours of the page
+    initialPoints = getContours(imgThreshold);
     
     imshow("Original Image", imgOriginal); //displaying the image
     imshow("Threshold Image", imgThreshold); //displaying the threshold image
