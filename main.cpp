@@ -8,7 +8,7 @@ using namespace std;
 
 Mat imgOriginal, imgGray, imgBlur, imgCanny, imgThreshold, imgDilation, imgErode;
 
-vector<Point> initialPoints;
+vector<Point> initialPoints, docPoints;
 
 Mat preProcessing(Mat img) {
     
@@ -75,6 +75,28 @@ void drawPoints (vector<Point> points, Scalar color) {
     
 }
 
+vector<Point> reorder(vector<Point> points) { //function takes the initial points and reorders them to ensure that the top left is labelled 0, top right is 1, bottom left is 2, bottom right is 3. This ensures that the warp function used later on works with any image
+    
+    vector<Point> newPoints;
+    vector<int> sumPoints, subPoints;
+    
+    for (int i = 0; i < 3; i++) {
+        
+        sumPoints.push_back(points[i].x + points[i].y);
+        subPoints.push_back(points[i].x - points[i].y);
+        
+    }
+    
+    newPoints.push_back(points[min_element(sumPoints.begin(), sumPoints.end()) - sumPoints.begin()]); //index 0
+    newPoints.push_back(points[max_element(subPoints.begin(), subPoints.end()) - subPoints.begin()]); //index 1
+    newPoints.push_back(points[min_element(subPoints.begin(), subPoints.end()) - subPoints.begin()]); //index 2
+    newPoints.push_back(points[max_element(sumPoints.begin(), sumPoints.end()) - sumPoints.begin()]); //index 3
+    
+    
+    return newPoints;
+    
+}
+
 int main() {
 
     string path = "Assets/paper.jpg"; //defining the path to the test image
@@ -88,6 +110,10 @@ int main() {
     //Getting the contours of the page
     initialPoints = getContours(imgThreshold);
     drawPoints(initialPoints, Scalar(0, 0, 255));
+    
+    //Reordering
+    docPoints = reorder(initialPoints);
+    drawPoints(docPoints, Scalar(0, 255, 0));
     
     imshow("Original Image", imgOriginal); //displaying the image
     imshow("Threshold Image", imgThreshold); //displaying the threshold image
