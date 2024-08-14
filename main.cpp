@@ -26,31 +26,28 @@ Mat preProcessing(Mat img) {
 
 vector<Point> getContours(Mat image){
     
-    vector<vector<Point>> contours;
+    vector<vector<Point>> contours; //defining the vector to hold the contours that will be found
     vector<Vec4i> hierarchy;
     
-    findContours(image, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+    findContours(image, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE); //finding the contours. "RETR_EXTERNAL" ensures that only the outermost contours are registered. "CHAIN_APPROX_SIMPLE" ensures that the points in each contour registered are only the cornerpoints of each contour rather than every point along the line.
     
-    vector<vector<Point>> conPoly(contours.size());
-    vector<Rect> boundRect(contours.size());
+    vector<vector<Point>> conPoly(contours.size()); //defining a new set of contours to store approximations later on
     
-    vector<Point> biggest;
+    vector<Point> biggest; //defining the set of points to be returned
     
-    int maxArea = 0;
+    int maxArea = 0; //defining variable to track the largest contours found.
     
     for (int i = 0; i < contours.size(); i++){
         
-        int area = contourArea(contours[i]);
+        int area = contourArea(contours[i]); //finding the area within the given contour
         cout << area << endl;
         
-        string objectType;
-        
-        if (area > 1000) {
+        if (area > 1000) { //filtering out small contours automatically based on their area
             
-            float perimeter = arcLength(contours[i], true);
-            approxPolyDP(contours[i], conPoly[i], 0.02*perimeter, true);
+            float perimeter = arcLength(contours[i], true); //calculating the perimeter of the given contour to be used for approximation later on
+            approxPolyDP(contours[i], conPoly[i], 0.02*perimeter, true); //approximating the contours to fewer vertices and storing these approximated contours in the variable "conPoly'
             
-            if (area > maxArea && conPoly[i].size() == 4) {
+            if (area > maxArea && conPoly[i].size() == 4) { //if the given area is larger than the current largest area and the contour shape is a rectangle than the "biggest" contour found is redefined with the given contour, and the max area is also redefined to the new are
                 
                 //drawContours(imgOriginal, conPoly, i, Scalar(255, 0, 255), 5); uncomment this to show the actual edges registered by the function
                 biggest = {conPoly[i][0], conPoly[i][1], conPoly[i][2], conPoly[i][3]};
@@ -62,7 +59,7 @@ vector<Point> getContours(Mat image){
         
     }
     
-    return biggest;
+    return biggest; //at the end of the for loop whichever contour is the largest is returned
     
 }
 
